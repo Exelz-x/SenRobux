@@ -1,128 +1,132 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XelzBux — Jual Robux Via Gamepass</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #0f0f10;
-            color: white;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XelzBux</title>
 
-        header {
-            background: #1a1a1d;
-            padding: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #00ffa6;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #00ffa6;
-        }
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f0f10;
+        color: white;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
 
-        .container {
-            margin: 40px auto;
-            padding: 20px;
-            max-width: 600px;
-            background: #1b1b1f;
-            border: 1px solid #00ffa6;
-            border-radius: 12px;
-            box-shadow: 0 0 20px #00ffa6;
-        }
+    header {
+        background: #1a1a1d;
+        padding: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #00ffa6;
+        border-bottom: 2px solid #00ffa6;
+    }
 
-        input, select {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-        }
+    .container {
+        margin: 40px auto;
+        padding: 20px;
+        max-width: 600px;
+        background: #1b1b1f;
+        border: 1px solid #00ffa6;
+        border-radius: 12px;
+    }
 
-        button {
-            background: #00ffa6;
-            padding: 12px 22px;
-            border: none;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+    .inputWrapper {
+        position: relative;
+        width: 90%;
+        margin: 0 auto;
+    }
 
-        button:hover {
-            background: #0affc7;
-        }
+    .inputWrapper input {
+        width: 100%;
+        padding: 14px 16px 14px 55px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: none;
+    }
 
-        #avatarBox {
-            display: none;
-            margin-top: 15px;
-        }
+    .avatarInside {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: none;
+        border: 2px solid #00ffa6;
+    }
 
-        #avatarImage {
-            width: 150px;
-            height: 150px;
-            border-radius: 12px;
-            border: 3px solid #00ffa6;
-            box-shadow: 0 0 10px #00ffa6;
-        }
+    .priceBox {
+        margin-top: 15px;
+        padding: 12px;
+        font-size: 20px;
+        background: #26262b;
+        border-radius: 10px;
+        border: 1px solid #00ffa6;
+    }
 
-        .priceBox {
-            margin-top: 15px;
-            padding: 12px;
-            font-size: 20px;
-            background: #26262b;
-            border-radius: 10px;
-            border: 1px solid #00ffa6;
-        }
-    </style>
+    button {
+        background: #00ffa6;
+        padding: 12px 22px;
+        border: none;
+        font-size: 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+</style>
 </head>
+
 <body>
 
 <header>XelzBux — Jual Robux Via Gamepass</header>
 
 <div class="container">
 
-    <h2>Masukkan Jumlah Robux</h2>
-    <input type="number" id="robuxInput" placeholder="Minimal 70 Robux" oninput="updateHarga()">
-
     <h2>Masukkan Username Roblox</h2>
-    <input type="text" id="username" placeholder="Contoh: yang_mulia" oninput="updateAvatar()">
-    
-    <div id="avatarBox">
-        <p>Avatar ditemukan:</p>
-        <img id="avatarImage" src="">
+
+    <div class="inputWrapper">
+        <img id="avatarInside" class="avatarInside">
+        <input type="text" id="username" placeholder="Contoh: Jansen1778" oninput="updateAvatar()">
     </div>
+
+    <br>
+
+    <h2>Masukkan Jumlah Robux</h2>
+    <input type="number" id="robuxInput" placeholder="Minimal 70 Robux" oninput="updateHarga()" style="width:90%; padding:12px;font-size:18px;border-radius:10px;border:none;">
 
     <div class="priceBox">
         Harga: <span id="harga">Rp 0</span>
         <br>
-        Harga Gamepass Pembeli: <span id="pajak">0 Robux</span>
+        Harga Gamepass: <span id="pajak">0 Robux</span>
     </div>
 
     <button>Beli Sekarang</button>
+
 </div>
 
 <script>
+// === AVATAR DALAM INPUT ===
 async function updateAvatar() {
     let username = document.getElementById("username").value;
-    if (username.length < 3) return;
+    let avatarImg = document.getElementById("avatarInside");
+
+    if (username.length < 3) {
+        avatarImg.style.display = "none";
+        return;
+    }
 
     try {
-        const response = await fetch(
-            `https://api.luarmor.net/v1/roblox/users/get-by-username?username=${username}`
-        );
-
-        const data = await response.json();
+        let res = await fetch(`https://api.luarmor.net/v1/roblox/users/get-by-username?username=${username}`);
+        let data = await res.json();
 
         if (!data.success) {
-            document.getElementById("avatarBox").style.display = "block";
-            document.getElementById("avatarImage").src = "";
-            document.getElementById("avatarImage").alt = "Username tidak ditemukan";
+            avatarImg.style.display = "none";
             return;
         }
 
@@ -131,14 +135,16 @@ async function updateAvatar() {
         let avatarUrl =
             `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png`;
 
-        document.getElementById("avatarBox").style.display = "block";
-        document.getElementById("avatarImage").src = avatarUrl;
+        avatarImg.src = avatarUrl;
+        avatarImg.style.display = "block";
 
     } catch (err) {
+        avatarImg.style.display = "none";
         console.log(err);
     }
 }
 
+// === HARGA ROBUX ===
 function updateHarga() {
     let robux = parseInt(document.getElementById("robuxInput").value);
 
@@ -148,16 +154,14 @@ function updateHarga() {
         return;
     }
 
-    // 100 Robux = 13.000
     let harga = Math.round((robux / 100) * 13000);
-
-    // Pajak Roblox 30% → Gamepass harus 1.43x
-    let gamepassHarga = Math.round(robux * 1.43);
+    let pajak = Math.round(robux * 1.43);
 
     document.getElementById("harga").innerText = "Rp " + harga.toLocaleString("id-ID");
-    document.getElementById("pajak").innerText = gamepassHarga + " Robux";
+    document.getElementById("pajak").innerText = pajak + " Robux";
 }
 </script>
 
 </body>
 </html>
+
