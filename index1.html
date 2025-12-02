@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XelzBux – Jual Robux Gamepass</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #0F0F0F;
+        color: white;
+    }
+
+    header {
+        padding: 20px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #111;
+        border-bottom: 2px solid #222;
+    }
+
+    .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #6A5ACD;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+    }
+
+    .section {
+        background: #151515;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px #0008;
+        margin-bottom: 30px;
+    }
+
+    input, button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+    }
+
+    input {
+        background: #1F1F1F;
+        color: white;
+        border: 1px solid #333;
+    }
+
+    button {
+        background: #6A5ACD;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #7B6CF0;
+    }
+
+    .avatar-box {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .avatar-box img {
+        width: 150px;
+        height: 150px;
+        border-radius: 15px;
+        margin-top: 10px;
+        background: #222;
+        border: 2px solid #444;
+    }
+
+    .output-box {
+        margin-top: 20px;
+        padding: 15px;
+        background: #1C1C1C;
+        border-radius: 10px;
+        border: 1px solid #333;
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        background: #101010;
+        color: #777;
+        margin-top: 40px;
+        border-top: 1px solid #222;
+    }
+</style>
+
+</head>
+<body>
+
+<header>
+    <div class="logo">XelzBux</div>
+</header>
+
+<div class="container">
+
+    <div class="section">
+        <h2>💸 Beli Robux Gamepass</h2>
+        <p>Masukkan username dan jumlah robux yang ingin dibeli.</p>
+
+        <label>Username Roblox</label>
+        <input type="text" id="username" placeholder="contoh: yangmulia123" oninput="updateAvatar()">
+
+        <div class="avatar-box" id="avatarBox" style="display:none;">
+            <p>Avatar ditemukan:</p>
+            <img id="avatarImage" src="">
+        </div>
+
+        <label>Jumlah Robux</label>
+        <input type="number" id="robux" min="70" placeholder="Minimal 70 Robux" oninput="updatePrice()">
+
+        <div class="output-box">
+            <p>💰 Harga: <b id="hargaRupiah">Rp 0</b></p>
+            <p>🎫 Harga Gamepass: <b id="hargaGamepass">0 Robux</b></p>
+        </div>
+
+        <button onclick="cekGamepass()">CEK GAMEPASS PEMBELI</button>
+        <button style="margin-top:10px; display:none;" id="payBtn">LANJUT BAYAR</button>
+    </div>
+</div>
+
+<footer>
+    XelzBux © 2025 – Fast & Trusted Roblox Gamepass Store
+</footer>
+
+<script>
+// 🔹 Tampil avatar asli dari username
+async function updateAvatar() {
+    let username = document.getElementById("username").value;
+
+    if (username.length < 3) return;
+
+    try {
+        // 1. Ambil UserID berdasarkan username
+        let userInfo = await fetch(
+            `https://api.roblox.com/users/get-by-username?username=${username}`
+        ).then(res => res.json());
+
+        if (!userInfo.Id) {
+            document.getElementById("avatarBox").style.display = "block";
+            document.getElementById("avatarImage").src = "";
+            document.getElementById("avatarImage").alt = "Username tidak ditemukan";
+            return;
+        }
+
+        let userId = userInfo.Id;
+
+        // 2. Generate URL avatar Roblox nyata
+        let avatarUrl =
+            `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png`;
+
+        // 3. Tampilkan ke UI
+        document.getElementById("avatarBox").style.display = "block";
+        document.getElementById("avatarImage").src = avatarUrl;
+
+    } catch (err) {
+        console.log("Error:", err);
+    }
+}
+
+
+// 🔹 Hitung harga otomatis
+function updatePrice() {
+    let robux = Number(document.getElementById("robux").value);
+
+    if (!robux || robux < 70) {
+        document.getElementById("hargaRupiah").innerHTML = "Rp 0";
+        document.getElementById("hargaGamepass").innerHTML = "0 Robux";
+        return;
+    }
+
+    let hargaRupiah = robux * 130;
+    let hargaGamepass = Math.ceil(robux / 0.7);
+
+    document.getElementById("hargaRupiah").innerHTML =
+        "Rp " + hargaRupiah.toLocaleString();
+
+    document.getElementById("hargaGamepass").innerHTML =
+        hargaGamepass + " Robux";
+}
+
+
+// 🔹 Tombol cek gamepass pembeli (UI saja)
+function cekGamepass() {
+    alert("Sistem UI sudah berjalan!\nUntuk auto cek gamepass asli, perlu backend.\nKalo mau, gue siap bikinin backend lengkap.");
+    document.getElementById("payBtn").style.display = "block";
+}
+</script>
+
+</body>
+</html>
