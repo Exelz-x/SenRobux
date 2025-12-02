@@ -6,79 +6,17 @@
 <title>XelzBux</title>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #0f0f10;
-        color: white;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-    }
+    body { background:#0f0f10; color:white; text-align:center; font-family:Arial; }
+    header { background:#1a1a1d; padding:20px; font-size:26px; border-bottom:2px solid #00ffa6; color:#00ffa6; }
+    .container { background:#1b1b1f; margin:40px auto; padding:20px; width:600px; border:1px solid #00ffa6; border-radius:12px; }
 
-    header {
-        background: #1a1a1d;
-        padding: 20px;
-        font-size: 28px;
-        font-weight: bold;
-        color: #00ffa6;
-        border-bottom: 2px solid #00ffa6;
-    }
-
-    .container {
-        margin: 40px auto;
-        padding: 20px;
-        max-width: 600px;
-        background: #1b1b1f;
-        border: 1px solid #00ffa6;
-        border-radius: 12px;
-    }
-
-    .inputWrapper {
-        position: relative;
-        width: 90%;
-        margin: 0 auto;
-    }
-
-    .inputWrapper input {
-        width: 100%;
-        padding: 14px 16px 14px 55px;
-        font-size: 18px;
-        border-radius: 10px;
-        border: none;
-    }
+    .inputWrapper { position:relative; width:90%; margin:auto; }
+    .inputWrapper input { width:100%; padding:14px 14px 14px 55px; font-size:18px; border-radius:10px; border:none; }
 
     .avatarInside {
-        position: absolute;
-        top: 50%;
-        left: 12px;
-        transform: translateY(-50%);
-        width: 35px;
-        height: 35px;
-        border-radius: 8px;
-        display: none;
-        border: 2px solid #00ffa6;
+        position:absolute; top:50%; left:12px; transform:translateY(-50%);
+        width:35px; height:35px; border-radius:8px; border:2px solid #00ffa6; display:none;
     }
-
-    .priceBox {
-        margin-top: 15px;
-        padding: 12px;
-        font-size: 20px;
-        background: #26262b;
-        border-radius: 10px;
-        border: 1px solid #00ffa6;
-    }
-
-    button {
-        background: #00ffa6;
-        padding: 12px 22px;
-        border: none;
-        font-size: 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-
 </style>
 </head>
 
@@ -95,23 +33,9 @@
         <input type="text" id="username" placeholder="Contoh: Jansen1778" oninput="updateAvatar()">
     </div>
 
-    <br>
-
-    <h2>Masukkan Jumlah Robux</h2>
-    <input type="number" id="robuxInput" placeholder="Minimal 70 Robux" oninput="updateHarga()" style="width:90%; padding:12px;font-size:18px;border-radius:10px;border:none;">
-
-    <div class="priceBox">
-        Harga: <span id="harga">Rp 0</span>
-        <br>
-        Harga Gamepass: <span id="pajak">0 Robux</span>
-    </div>
-
-    <button>Beli Sekarang</button>
-
 </div>
 
 <script>
-// === AVATAR DALAM INPUT ===
 async function updateAvatar() {
     let username = document.getElementById("username").value;
     let avatarImg = document.getElementById("avatarInside");
@@ -122,46 +46,43 @@ async function updateAvatar() {
     }
 
     try {
-        let res = await fetch(`https://api.luarmor.net/v1/roblox/users/get-by-username?username=${username}`);
-        let data = await res.json();
+        // 1. Ambil userId dulu
+        let userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usernames: [username] })
+        });
 
-        if (!data.success) {
+        let userData = await userRes.json();
+
+        if (!userData.data || userData.data.length === 0) {
             avatarImg.style.display = "none";
             return;
         }
 
-        let userId = data.userId;
+        let userId = userData.data[0].id;
 
-        let avatarUrl =
-            `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png`;
+        // 2. Ambil avatar HEADSHOT (pakai API ROBLOX resmi yang support CORS)
+        let thumbURL =
+            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png`;
 
-        avatarImg.src = avatarUrl;
+        let thumbRes = await fetch(thumbURL);
+        let thumbData = await thumbRes.json();
+
+        if (!thumbData.data || !thumbData.data[0].imageUrl) {
+            avatarImg.style.display = "none";
+            return;
+        }
+
+        avatarImg.src = thumbData.data[0].imageUrl;
         avatarImg.style.display = "block";
 
     } catch (err) {
-        avatarImg.style.display = "none";
         console.log(err);
+        avatarImg.style.display = "none";
     }
-}
-
-// === HARGA ROBUX ===
-function updateHarga() {
-    let robux = parseInt(document.getElementById("robuxInput").value);
-
-    if (robux < 70) {
-        document.getElementById("harga").innerText = "Rp 0";
-        document.getElementById("pajak").innerText = "0 Robux";
-        return;
-    }
-
-    let harga = Math.round((robux / 100) * 13000);
-    let pajak = Math.round(robux * 1.43);
-
-    document.getElementById("harga").innerText = "Rp " + harga.toLocaleString("id-ID");
-    document.getElementById("pajak").innerText = pajak + " Robux";
 }
 </script>
 
 </body>
 </html>
-
