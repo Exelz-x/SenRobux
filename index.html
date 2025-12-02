@@ -1,88 +1,135 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XelzBux</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XelzBux – Avatar Checker</title>
 
-<style>
-    body { background:#0f0f10; color:white; text-align:center; font-family:Arial; }
-    header { background:#1a1a1d; padding:20px; font-size:26px; border-bottom:2px solid #00ffa6; color:#00ffa6; }
-    .container { background:#1b1b1f; margin:40px auto; padding:20px; width:600px; border:1px solid #00ffa6; border-radius:12px; }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
 
-    .inputWrapper { position:relative; width:90%; margin:auto; }
-    .inputWrapper input { width:100%; padding:14px 14px 14px 55px; font-size:18px; border-radius:10px; border:none; }
+        .box {
+            background: #1b1b1b;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0px 0px 15px #000;
+        }
 
-    .avatarInside {
-        position:absolute; top:50%; left:12px; transform:translateY(-50%);
-        width:35px; height:35px; border-radius:8px; border:2px solid #00ffa6; display:none;
-    }
-</style>
+        input {
+            width: 80%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4c8bff;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        img {
+            margin-top: 20px;
+            width: 180px;
+            height: 180px;
+            border-radius: 12px;
+            border: 3px solid #4c8bff;
+            background: #333;
+        }
+
+        .error {
+            color: #ff4c4c;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 
 <body>
+    <h1>XelzBux – Avatar Checker</h1>
 
-<header>XelzBux — Jual Robux Via Gamepass</header>
+    <div class="box">
+        <input id="username" type="text" placeholder="Masukkan username Roblox...">
+        <br>
+        <button onclick="getAvatar()">Cari Avatar</button>
 
-<div class="container">
-
-    <h2>Masukkan Username Roblox</h2>
-
-    <div class="inputWrapper">
-        <img id="avatarInside" class="avatarInside">
-        <input type="text" id="username" placeholder="Contoh: Jansen1778" oninput="updateAvatar()">
+        <div id="result"></div>
     </div>
 
-</div>
+    <script>
+        async function getAvatar() {
+            const username = document.getElementById("username").value.trim();
+            const resultBox = document.getElementById("result");
+            resultBox.innerHTML = "<p>Mencari avatar...</p>";
 
-<script>
-async function updateAvatar() {
-    let username = document.getElementById("username").value;
-    let avatarImg = document.getElementById("avatarInside");
+            if (!username) {
+                resultBox.innerHTML = "<p class='error'>Masukkan username dulu.</p>";
+                return;
+            }
 
-    if (username.length < 3) {
-        avatarImg.style.display = "none";
-        return;
-    }
+            try {
+                // API untuk ambil user ID
+                let userRes = await fetch(
+                    `https://users.roblox.com/v1/usernames/users`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ usernames: [username] })
+                    }
+                );
 
-    try {
-        // 1. Ambil userId dulu
-        let userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ usernames: [username] })
-        });
+                let userData = await userRes.json();
 
-        let userData = await userRes.json();
+                if (!userData.data || userData.data.length === 0) {
+                    resultBox.innerHTML = "<p class='error'>User tidak ditemukan.</p>";
+                    return;
+                }
 
-        if (!userData.data || userData.data.length === 0) {
-            avatarImg.style.display = "none";
-            return;
+                let userId = userData.data[0].id;
+
+                // API Avatar
+                let avatarRes = await fetch(
+                    `https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`
+                );
+                let avatarData = await avatarRes.json();
+
+                let info = avatarData.data[0];
+
+                // Jika avatar diblokir, state bukan "Completed"
+                if (!info || info.state !== "Completed") {
+                    resultBox.innerHTML = `
+                        <p>Avatar ditemukan, tapi tidak bisa ditampilkan (privasi / diblokir Roblox).</p>
+                        <img src="https://tr.rbxcdn.com/30DAY-DefaultAvatar/420/420/Avatar" alt="Default Avatar">
+                    `;
+                    return;
+                }
+
+                // Avatar sukses
+                resultBox.innerHTML = `
+                    <p>Avatar ditemukan:</p>
+                    <img src="${info.imageUrl}" alt="Avatar">
+                `;
+
+            } catch (e) {
+                resultBox.innerHTML = "<p class='error'>Terjadi error saat mengambil avatar.</p>";
+            }
         }
-
-        let userId = userData.data[0].id;
-
-        // 2. Ambil avatar HEADSHOT (pakai API ROBLOX resmi yang support CORS)
-        let thumbURL =
-            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png`;
-
-        let thumbRes = await fetch(thumbURL);
-        let thumbData = await thumbRes.json();
-
-        if (!thumbData.data || !thumbData.data[0].imageUrl) {
-            avatarImg.style.display = "none";
-            return;
-        }
-
-        avatarImg.src = thumbData.data[0].imageUrl;
-        avatarImg.style.display = "block";
-
-    } catch (err) {
-        console.log(err);
-        avatarImg.style.display = "none";
-    }
-}
-</script>
+    </script>
 
 </body>
 </html>
+
+
