@@ -1,135 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>XelzBux – Avatar Checker</title>
-
+    <title>XelzBux Avatar Checker</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: white;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .box {
-            background: #1b1b1b;
-            padding: 30px;
-            border-radius: 15px;
-            width: 400px;
-            margin: auto;
-            box-shadow: 0px 0px 15px #000;
-        }
-
-        input {
-            width: 80%;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: #4c8bff;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        img {
-            margin-top: 20px;
-            width: 180px;
-            height: 180px;
-            border-radius: 12px;
-            border: 3px solid #4c8bff;
-            background: #333;
-        }
-
-        .error {
-            color: #ff4c4c;
-            font-size: 14px;
-            margin-top: 8px;
-        }
+        body { background:#111; color:white; font-family:Arial; text-align:center; padding:40px; }
+        .box { background:#1c1c1c; padding:25px; width:380px; margin:auto; border-radius:12px; }
+        input { width:80%; padding:10px; border-radius:8px; border:none; margin-bottom:10px; }
+        button { padding:10px 20px; background:#3f7cff; border:none; border-radius:8px; color:white; cursor:pointer; }
+        img { margin-top:20px; width:180px; height:180px; border-radius:10px; border:3px solid #3f7cff; }
+        .error { color:#ff4c4c; margin-top:10px; }
     </style>
 </head>
 
 <body>
-    <h1>XelzBux – Avatar Checker</h1>
+    <h2>XelzBux – Avatar Checker</h2>
 
     <div class="box">
         <input id="username" type="text" placeholder="Masukkan username Roblox...">
-        <br>
-        <button onclick="getAvatar()">Cari Avatar</button>
+        <button onclick="loadAvatar()">Cari Avatar</button>
 
         <div id="result"></div>
     </div>
 
     <script>
-        async function getAvatar() {
+        async function loadAvatar() {
             const username = document.getElementById("username").value.trim();
-            const resultBox = document.getElementById("result");
-            resultBox.innerHTML = "<p>Mencari avatar...</p>";
+            const result = document.getElementById("result");
 
             if (!username) {
-                resultBox.innerHTML = "<p class='error'>Masukkan username dulu.</p>";
+                result.innerHTML = "<p class='error'>Masukkan username dulu.</p>";
                 return;
             }
 
-            try {
-                // API untuk ambil user ID
-                let userRes = await fetch(
-                    `https://users.roblox.com/v1/usernames/users`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ usernames: [username] })
-                    }
-                );
+            result.innerHTML = "<p>Mencari...</p>";
 
-                let userData = await userRes.json();
+            try {
+                // Ambil User ID dari username
+                let fetchUser = await fetch("https://users.roblox.com/v1/usernames/users", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usernames: [username] })
+                });
+
+                let userData = await fetchUser.json();
 
                 if (!userData.data || userData.data.length === 0) {
-                    resultBox.innerHTML = "<p class='error'>User tidak ditemukan.</p>";
+                    result.innerHTML = "<p class='error'>User tidak ditemukan.</p>";
                     return;
                 }
 
                 let userId = userData.data[0].id;
 
-                // API Avatar
-                let avatarRes = await fetch(
-                    `https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`
-                );
-                let avatarData = await avatarRes.json();
+                // Avatar pakai endpoint LEGACY (pasti muncul)
+                let avatarURL =
+                    `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=420&height=420&format=png`;
 
-                let info = avatarData.data[0];
-
-                // Jika avatar diblokir, state bukan "Completed"
-                if (!info || info.state !== "Completed") {
-                    resultBox.innerHTML = `
-                        <p>Avatar ditemukan, tapi tidak bisa ditampilkan (privasi / diblokir Roblox).</p>
-                        <img src="https://tr.rbxcdn.com/30DAY-DefaultAvatar/420/420/Avatar" alt="Default Avatar">
-                    `;
-                    return;
-                }
-
-                // Avatar sukses
-                resultBox.innerHTML = `
+                result.innerHTML = `
                     <p>Avatar ditemukan:</p>
-                    <img src="${info.imageUrl}" alt="Avatar">
+                    <img src="${avatarURL}" alt="Avatar Roblox">
                 `;
 
-            } catch (e) {
-                resultBox.innerHTML = "<p class='error'>Terjadi error saat mengambil avatar.</p>";
+            } catch (err) {
+                result.innerHTML = "<p class='error'>Gagal load avatar.</p>";
             }
         }
     </script>
 
 </body>
 </html>
+
 
 
