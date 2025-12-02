@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>XelzBux Avatar Checker</title>
+    <title>XelzBux – Avatar Checker</title>
     <style>
-        body { background:#111; color:white; font-family:Arial; text-align:center; padding:40px; }
-        .box { background:#1c1c1c; padding:25px; width:380px; margin:auto; border-radius:12px; }
+        body { background:#0d0d0d; color:white; font-family:Arial; text-align:center; padding:40px; }
+        .box { background:#1b1b1b; padding:25px; width:380px; margin:auto; border-radius:12px; }
         input { width:80%; padding:10px; border-radius:8px; border:none; margin-bottom:10px; }
         button { padding:10px 20px; background:#3f7cff; border:none; border-radius:8px; color:white; cursor:pointer; }
         img { margin-top:20px; width:180px; height:180px; border-radius:10px; border:3px solid #3f7cff; }
@@ -36,29 +36,27 @@
             result.innerHTML = "<p>Mencari...</p>";
 
             try {
-                // Ambil User ID dari username
-                let fetchUser = await fetch("https://users.roblox.com/v1/usernames/users", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ usernames: [username] })
-                });
+                // Ambil user ID tanpa POST (aman)
+                let fetchUser = await fetch(
+                    `https://api.roblox.com/users/get-by-username?username=${username}`
+                );
 
                 let userData = await fetchUser.json();
 
-                if (!userData.data || userData.data.length === 0) {
+                if (!userData || !userData.Id) {
                     result.innerHTML = "<p class='error'>User tidak ditemukan.</p>";
                     return;
                 }
 
-                let userId = userData.data[0].id;
+                let userId = userData.Id;
 
-                // Avatar pakai endpoint LEGACY (pasti muncul)
+                // Headshot selalu muncul
                 let avatarURL =
                     `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=420&height=420&format=png`;
 
                 result.innerHTML = `
                     <p>Avatar ditemukan:</p>
-                    <img src="${avatarURL}" alt="Avatar Roblox">
+                    <img src="${avatarURL}">
                 `;
 
             } catch (err) {
@@ -69,6 +67,7 @@
 
 </body>
 </html>
+
 
 
 
